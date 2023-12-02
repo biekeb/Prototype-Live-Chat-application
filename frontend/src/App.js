@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:3001'); 
+const socket = io('http://localhost:3001');
 
 function App() {
   const [username, setUsername] = useState('');
@@ -10,27 +10,28 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [availableUsers, setAvailableUsers] = useState([]);
 
-useEffect(() => {
-  socket.on('connect', () => {
-    console.log(`Connected to server with ID: ${socket.id}`);
-  });
-}, [socket]);
-
-
+  useEffect(() => {
+    socket.on('connect', () => {
+      console.log(`Connected to server with ID: ${socket.id}`);
+    });
+  }, [socket]);
 
   useEffect(() => {
     const username = prompt('Enter your username:');
-    setUsername(username);
-    socket.emit('join', username);
+    if (username) {
+      setUsername(username);
+      socket.emit('join', username);
 
-    socket.on('updateUsers', (users) => {
-      setUsers(users);
-    });
+      socket.on('updateUsers', (users) => {
+        setUsers(users);
+      });
 
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
+      // Comment or remove the following line
+      // return () => {
+      //   socket.disconnect();
+      // };
+    }
+  }, [socket]);
 
   const sendMessage = () => {
     const data = {
@@ -43,28 +44,20 @@ useEffect(() => {
   };
 
   useEffect(() => {
-  socket.emit('getAvailableUsers');
+    socket.emit('getAvailableUsers');
 
-  socket.on('updateAvailableUsers', (users) => {
-    setAvailableUsers(users);
-  });
-}, [socket]);
-
-
-
+    socket.on('updateAvailableUsers', (users) => {
+      setAvailableUsers(users);
+    });
+  }, [socket]);
 
   socket.on('message', (data) => {
     setMessages([...messages, data]);
   });
-  
 
   const handleUserSelection = (selectedUser) => {
-  // Hier kun je een nieuwe chatroom maken met de geselecteerde gebruiker
-  // en navigeren naar de chatroompagina, of de chatinterface updaten
-  // om met de geselecteerde gebruiker te communiceren.
-  console.log(`Selected user: ${selectedUser}`);
-};
-
+    console.log(`Selected user: ${selectedUser}`);
+  };
 
   return (
     <div>
@@ -98,7 +91,6 @@ useEffect(() => {
           ))}
         </ul>
       </div>
-
     </div>
   );
 }
